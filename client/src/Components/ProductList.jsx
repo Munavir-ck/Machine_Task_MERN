@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-
 import {
   filter_product,
   get_categories,
@@ -8,14 +7,14 @@ import {
 } from "../API/Services/clientService";
 import { findChildCategories, findTopLevelCategories } from "../util/helper";
 import SubcategoryList from "./subCategoryList";
-import Spinner from "./Spinner";
 
 const ProductListing = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedSubcategory, setSelectedSubcategory] = useState([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [topLevelCategories, setTopLevelCategories] = useState([]);
+  const [isReset,setIsReste]=useState(false)
 
   useEffect(() => {
     get_categories().then((data) => {
@@ -25,66 +24,99 @@ const ProductListing = () => {
     get_product().then((data) => {
       setProducts(data.result);
     });
-  }, []);
+  }, [isReset]);
 
   useEffect(() => {
     if (categories.length > 0) {
       setTopLevelCategories(findTopLevelCategories(categories));
       if (topLevelCategories.length > 0) {
         get_product_count(topLevelCategories).then((data) => {
-          
           setTopLevelCategories(data.data);
         });
       }
     }
-  }, [categories]);
+  }, [categories,selectedCategory]);
 
-  const handleCategoryChange = (category) => {
+  const handleCategoryChange = (category,categoryName) => {
     const subCategory = findChildCategories(category, categories);
-    setSelectedSubcategory(subCategory);
+   
+    setSelectedSubcategories(subCategory);
     filter_product(category).then((data) => {
       setProducts(data);
     });
-    setSelectedCategory(category);
+    setSelectedCategory(categoryName);
   };
+
+  const handleReset = () => {
+    
+   if (selectedSubcategories.length>0||selectedCategory!=="") {
+    setIsReste(!isReset)
+    setSelectedCategory("")
+    setSelectedSubcategories([])
+   }
+  };
+
 
   return (
     <div className="container mx-auto mt-8 p-4 bg-white rounded shadow-lg h-screen overflow-scroll">
       <h2 className="text-3xl font-bold mb-4">Product Listing Page</h2>
+      <button
+        onClick={handleReset}
+        className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 font-bold"
+      >
+        Reset
+      </button>
 
-      {/* Category Filter */}
+      {/* Category Filter - Horizontal List */}
       <div className="mb-6">
-        <label className="text-sm">Select Category:</label>
-        <select
-          value={selectedCategory}
-          onChange={(e) => handleCategoryChange(e.target.value)}
-          className="block w-full p-2 mt-1 border rounded-md"
-        >
-          <option value="">All Categories</option>
+        {selectedCategory? <h1 className="font-bold text-4xl">
+          {selectedCategory}  
+        </h1>:
+        <>
+         <label className="text-sm">Select Category:</label>
+        <div className="flex space-x-4 mt-2">
+          <button
+            onClick={() => handleCategoryChange("")}
+            className={`p-2 border rounded-md ${
+              selectedCategory === "" ? "bg-blue-500 text-white" : ""
+            }`}
+          >
+            All Categories
+          </button>
           {topLevelCategories.map((category) => (
-            <option
-              className="font-bold"
+            <button
               key={category.categoryId}
-              value={category.categoryId}
+              onClick={() => handleCategoryChange(category.categoryId,category.categoryName)}
+              className={`p-2 border rounded-md ${
+                selectedCategory === category.categoryId
+                  ? "bg-blue-500 text-white"
+                  : ""
+              }`}
             >
-              {category.categoryName}
+              {category.categoryName} (
               <span className="text-red-600 font-bold">
-                ( {category.productCount} )
+                {category.productCount}
               </span>
-            </option>
+              )
+            </button>
           ))}
-        </select>
+        </div>
+        </>
+        }
+       
+       
       </div>
 
       {/* Subcategory Filter */}
-      {selectedSubcategory.length > 0 && (
+      {selectedSubcategories.length > 0 && (
         <div className="mb-6">
           <label className="text-sm">Select Subcategory:</label>
           <SubcategoryList
-            subcategories={selectedSubcategory}
+            subcategories={selectedSubcategories}
             categories={categories}
             setProducts={setProducts}
-            setSubCategories={ setSelectedSubcategory}
+            setSubCategories={setSelectedSubcategories}
+            setSelectedCategory={ setSelectedCategory}
           />
         </div>
       )}

@@ -1,14 +1,26 @@
 // SubcategoryList.js
-import React, { useState } from "react";
-import { filter_product } from "../API/Services/clientService";
+import React, { useEffect, useState } from "react";
+import { filter_product, get_product_count } from "../API/Services/clientService";
 import { findChildCategories } from "../util/helper";
 
-const SubcategoryList = ({ subcategories, categories, setProducts }) => {
+const SubcategoryList = ({ subcategories, categories, setProducts,setSubCategories,setSelectedCategory }) => {
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const[isSelect,setIsSelect]=useState("")
 
-  const handleSubCategory = (category) => {
+  useEffect(()=>{
+    get_product_count(subcategories).then((data)=>{
+      setSubCategories(data.data)
+    })
+  },[isSelect])
+  
+
+  const handleSubCategory = (category,categoryName) => {
+    setIsSelect(category)
+    setSelectedCategory(categoryName)
+    console.log(selectedSubcategory , category,343434)
     const subCategory = findChildCategories(category, categories);
-    setSelectedSubcategory(subCategory);
+   
+    setSubCategories(subCategory);
     filter_product(category).then((data) => {
       setProducts(data);
     });
@@ -21,24 +33,26 @@ const SubcategoryList = ({ subcategories, categories, setProducts }) => {
         {subcategories.map((subcategory) => (
           <button
             key={subcategory._id}
-            onClick={() => handleSubCategory(subcategory._id)}
+            onClick={() => handleSubCategory(subcategory.categoryId,subcategory.categoryName)}
             className={`mr-2 mb-2 px-4 py-2 ${
-              selectedSubcategory === subcategory._id
+              isSelect === subcategory._id
                 ? "bg-blue-500 text-white"
                 : "bg-white text-blue-500 border border-blue-500"
             } rounded cursor-pointer hover:underline focus:outline-none`}
           >
-            {subcategory.name}
+            {subcategory.categoryName}({subcategory.productCount})
           </button>
         ))}
       </div>
-      {selectedSubcategory && (
+      {/* {selectedSubcategory && (
         <SubcategoryList
           subcategories={selectedSubcategory}
           categories={categories}
           setProducts={setProducts}
+          setSubCategories={setSelectedSubcategory}
+
         />
-      )}
+      )} */}
     </div>
   );
 };

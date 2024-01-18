@@ -1,25 +1,22 @@
 import "./App.css";
-import CategoryForm from "./Components/categoryForm";
-import ProductForm from "./Components/productForm";
+
 
 
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import ProductListingPage from "./Components/productListing";
+import AddCategory from "./pages/addCategory";
+import AddProduct from "./pages/addProduct";
+import ProductList from "./pages/productList";
 
 function App() {
-  const token = localStorage.getItem("token");
-
   return (
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/pro"
-            element={<ProductForm/>}
-          />
+          <Route path="/products" element={<AddProduct/>} />
 
-          <Route path="/" element={<CategoryForm />} />
-          <Route path="/li" element={<ProductListingPage/>} />
+          <Route path="/" element={<AddCategory />} />
+          <Route path="/product_list" element={<ProductList />} />
         </Routes>
       </BrowserRouter>
     </div>

@@ -1,6 +1,6 @@
 import express from "express";
 import {categories,get_categories,add_product,get_product,filter_product,get_product_count} from "../controller/user.js"
-import { verifyUser } from "../middleware/auth.js";
+
 
 
 const router=express.Router()
